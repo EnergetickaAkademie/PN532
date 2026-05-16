@@ -1,6 +1,6 @@
 {
   "name": "PN532",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "PN532 library PlatformIO",
   "authors": [
     {
@@ -15,6 +15,10 @@
   "frameworks": "arduino",
   "build": {
     "srcDir": ".",
+    "flags": [
+      "-I PN532",
+      "-I PN532_I2C"
+    ],
     "srcFilter": [
       "+<PN532/>",
       "+<PN532_I2C/>",
