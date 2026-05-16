@@ -1,7 +1,7 @@
 {
-  "name": "PN532-I2C-PIO",
+  "name": "PN532",
   "version": "1.0.0",
-  "description": "PN532 library configured specifically for I2C use in PlatformIO",
+  "description": "PN532 library PlatformIO",
   "authors": [
     {
       "name": "Elechouse",
@@ -10,7 +10,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "YOUR_FORK_URL_HERE"
+    "url": "https://github.com/EnergetickaAkademie/PN532"
   },
   "frameworks": "arduino",
   "build": {
