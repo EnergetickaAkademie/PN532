@@ -1,0 +1,27 @@
+{
+  "name": "PN532-I2C-PIO",
+  "version": "1.0.0",
+  "description": "PN532 library configured specifically for I2C use in PlatformIO",
+  "authors": [
+    {
+      "name": "Elechouse",
+      "maintainer": false
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "YOUR_FORK_URL_HERE"
+  },
+  "frameworks": "arduino",
+  "build": {
+    "srcDir": ".",
+    "srcFilter": [
+      "+<PN532/>",
+      "+<PN532_I2C/>",
+      "-<PN532_SPI/>",
+      "-<PN532_HSU/>",
+      "-<NDEF/>",
+      "-<mac_rx/>"
+    ]
+  }
+}
