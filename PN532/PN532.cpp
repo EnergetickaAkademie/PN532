@@ -390,7 +390,8 @@ bool PN532::readPassiveTargetID(uint8_t cardbaudrate, uint8_t *uid, uint8_t *uid
     }
 
     // read data packet
-    if (HAL(readResponse)(pn532_packetbuffer, sizeof(pn532_packetbuffer), timeout) < 0) {
+    int16_t responseLength = HAL(readResponse)(pn532_packetbuffer, sizeof(pn532_packetbuffer), timeout);
+    if (responseLength < 6) {
         return 0x0;
     }
 
@@ -419,9 +420,16 @@ bool PN532::readPassiveTargetID(uint8_t cardbaudrate, uint8_t *uid, uint8_t *uid
     DMSG("\n");
 
     /* Card appears to be Mifare Classic */
-    *uidLength = pn532_packetbuffer[5];
+    uint8_t detectedUidLength = pn532_packetbuffer[5];
+    if ((detectedUidLength != 4 && detectedUidLength != 7) ||
+            responseLength < (int16_t)(6 + detectedUidLength)) {
+        *uidLength = 0;
+        return 0;
+    }
 
-    for (uint8_t i = 0; i < pn532_packetbuffer[5]; i++) {
+    *uidLength = detectedUidLength;
+
+    for (uint8_t i = 0; i < detectedUidLength; i++) {
         uid[i] = pn532_packetbuffer[6 + i];
     }
 
@@ -502,7 +510,10 @@ uint8_t PN532::mifareclassic_AuthenticateBlock (uint8_t *uid, uint8_t uidLen, ui
         return 0;
 
     // Read the response packet
-    HAL(readResponse)(pn532_packetbuffer, sizeof(pn532_packetbuffer));
+    int16_t responseLength = HAL(readResponse)(pn532_packetbuffer, sizeof(pn532_packetbuffer));
+    if (responseLength < 1) {
+        return 0;
+    }
 
     // Check if the response is valid and we are authenticated???
     // for an auth success it should be bytes 5-7: 0xD5 0x41 0x00
@@ -545,7 +556,10 @@ uint8_t PN532::mifareclassic_ReadDataBlock (uint8_t blockNumber, uint8_t *data)
     }
 
     /* Read the response packet */
-    HAL(readResponse)(pn532_packetbuffer, sizeof(pn532_packetbuffer));
+    int16_t responseLength = HAL(readResponse)(pn532_packetbuffer, sizeof(pn532_packetbuffer));
+    if (responseLength < 17) {
+        return 0;
+    }
 
     /* If byte 8 isn't 0x00 we probably have an error */
     if (pn532_packetbuffer[0] != 0x00) {
@@ -727,7 +741,10 @@ uint8_t PN532::mifareultralight_ReadPage (uint8_t page, uint8_t *buffer)
     }
 
     /* Read the response packet */
-    HAL(readResponse)(pn532_packetbuffer, sizeof(pn532_packetbuffer));
+    int16_t responseLength = HAL(readResponse)(pn532_packetbuffer, sizeof(pn532_packetbuffer));
+    if (responseLength < 17) {
+        return 0;
+    }
 
     /* If byte 8 isn't 0x00 we probably have an error */
     if (pn532_packetbuffer[0] == 0x00) {
