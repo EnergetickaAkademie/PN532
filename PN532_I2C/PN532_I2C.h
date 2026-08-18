@@ -16,13 +16,19 @@ public:
     void wakeup();
     virtual int8_t writeCommand(const uint8_t *header, uint8_t hlen, const uint8_t *body = 0, uint8_t blen = 0);
     int16_t readResponse(uint8_t buf[], uint8_t len, uint16_t timeout);
+    int16_t getLastError() const { return _lastError; }
+    uint32_t getErrorCount() const { return _errorCount; }
     
 private:
     TwoWire* _wire;
     uint8_t command;
+    int16_t _lastError;
+    uint32_t _errorCount;
     
     int8_t readAckFrame();
     int16_t getResponseLength(uint8_t buf[], uint8_t len, uint16_t timeout);
+    int8_t waitReady(uint16_t timeout);
+    int16_t recordResult(int16_t result);
     
     inline uint8_t write(uint8_t data) {
         #if ARDUINO >= 100
