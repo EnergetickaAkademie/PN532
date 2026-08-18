@@ -123,7 +123,9 @@ int8_t PN532_I2C::waitReady(uint16_t timeout)
             read();
         }
 
-        delay(1);
+        // The PN532 may NACK its address while it is busy. Retrying at 5 ms
+        // intervals avoids hammering the ESP32 legacy I2C ISR and its log path.
+        delay(5);
     } while (timeout == 0 || (uint32_t)(millis() - startedAt) <= timeout);
 
     return PN532_TIMEOUT;
