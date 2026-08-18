@@ -95,19 +95,28 @@ int16_t PN532_I2C::getResponseLength(uint8_t buf[], uint8_t len, uint16_t timeou
     uint16_t time = 0;
 
     do {
-        if (_wire->requestFrom((uint16_t) PN532_I2C_ADDRESS, (uint8_t) 6) != 6) {
-            return PN532_TIMEOUT;
+        const size_t expectedLength = 6;
+        const size_t receivedLength = _wire->requestFrom(
+                (uint16_t) PN532_I2C_ADDRESS, (uint8_t) expectedLength);
+
+        if (receivedLength == expectedLength) {
+            int status = read();
+            if (status >= 0 && (status & 1)) {  // check first byte --- status
+                break;                         // PN532 is ready
+            }
         }
 
-        int status = read();
-        if (status >= 0 && (status & 1)) {  // check first byte --- status
-            break;                         // PN532 is ready
+        // A PN532 that is waking up can transiently NACK or return a short
+        // status frame. Discard it and keep polling within the caller's
+        // bounded timeout instead of failing the whole command immediately.
+        while (_wire->available()) {
+            read();
         }
 
         delay(1);
         time++;
         if ((0 != timeout) && (time > timeout)) {
-            return -1;
+            return PN532_TIMEOUT;
         }
     } while (1); 
     
@@ -161,20 +170,24 @@ int16_t PN532_I2C::readResponse(uint8_t buf[], uint8_t len, uint16_t timeout)
 
     // [RDY] 00 00 FF LEN LCS (TFI PD0 ... PDn) DCS 00
     do {
-        if (_wire->requestFrom((uint16_t) PN532_I2C_ADDRESS,
-                (uint8_t) requestLength) != requestLength) {
-            return PN532_TIMEOUT;
+        const size_t receivedLength = _wire->requestFrom(
+                (uint16_t) PN532_I2C_ADDRESS, (uint8_t) requestLength);
+
+        if (receivedLength == requestLength) {
+            int status = read();
+            if (status >= 0 && (status & 1)) {  // check first byte --- status
+                break;                         // PN532 is ready
+            }
         }
 
-        int status = read();
-        if (status >= 0 && (status & 1)) {  // check first byte --- status
-            break;                         // PN532 is ready
+        while (_wire->available()) {
+            read();
         }
 
         delay(1);
         time++;
         if ((0 != timeout) && (time > timeout)) {
-            return -1;
+            return PN532_TIMEOUT;
         }
     } while (1); 
     
@@ -249,14 +262,18 @@ int8_t PN532_I2C::readAckFrame()
     uint16_t time = 0;
     do {
         const size_t ackLength = sizeof(PN532_ACK) + 1;
-        if (_wire->requestFrom((uint16_t) PN532_I2C_ADDRESS,
-                (uint8_t) ackLength) != ackLength) {
-            return PN532_TIMEOUT;
+        const size_t receivedLength = _wire->requestFrom(
+                (uint16_t) PN532_I2C_ADDRESS, (uint8_t) ackLength);
+
+        if (receivedLength == ackLength) {
+            int status = read();
+            if (status >= 0 && (status & 1)) {  // check first byte --- status
+                break;                         // PN532 is ready
+            }
         }
 
-        int status = read();
-        if (status >= 0 && (status & 1)) {  // check first byte --- status
-            break;                         // PN532 is ready
+        while (_wire->available()) {
+            read();
         }
 
         delay(1);
