@@ -32,7 +32,7 @@ private:
         #endif
     }
     
-    inline uint8_t read() {
+    inline int read() {
         #if ARDUINO >= 100
             return _wire->read();
         #else
